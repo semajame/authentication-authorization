@@ -10,6 +10,7 @@ module.exports = router;
 
 router.get("/", getAllBranch);
 router.post("/", createBranch, create);
+router.post("/:branchId/assign/:userId", assignUserToBranch);
 router.put("/:id", updateSchema, update);
 router.delete("/:id", _delete);
 
@@ -34,6 +35,13 @@ function update(req, res, next) {
     .catch(next);
 }
 
+function assignUserToBranch(req, res, next) {
+  branchService
+    .assignUserToBranch(req.params.id, req.body)
+    .then(() => res.json({ message: "Assign User to Branch success" }))
+    .catch(next);
+}
+
 function _delete(req, res, next) {
   branchService
     .delete(req.params.id)
@@ -45,6 +53,7 @@ function createBranch(req, res, next) {
   const schema = Joi.object({
     name: Joi.string().required(),
     location: Joi.string().required(),
+    status: Joi.string().required(),
   });
   validateRequest(req, next, schema);
 }
@@ -53,6 +62,7 @@ function updateSchema(req, res, next) {
   const schema = Joi.object({
     name: Joi.string().empty(""),
     location: Joi.string().empty(""),
+    status: Joi.string().empty(""),
   });
   validateRequest(req, next, schema);
 }
