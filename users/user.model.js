@@ -7,6 +7,7 @@ function model(sequelize) {
     email: { type: DataTypes.STRING, allowNull: false },
     passwordHash: { type: DataTypes.STRING, allowNull: false },
     username: { type: DataTypes.STRING, allowNull: false },
+    assignedBranchId: { type: DataTypes.INTEGER, allowNull: true },
   };
 
   const options = {

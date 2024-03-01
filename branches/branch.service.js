@@ -55,31 +55,44 @@ async function update(id, params) {
   await branch.save();
 }
 
-async function assignUserToBranch(user, branch) {
-  const branchId = req.params.branchId;
-  const userId = req.params.userId;
-
+async function assignUserToBranch(branchId, userId) {
   try {
+    const existingAssignment = await db.UserBranch.findOne({
+      where: { userId, branchId },
+    });
+
+    if (existingAssignment) {
+      throw { status: 400, message: "User already assigned to this branch" };
+    }
     // Check if the branch and user exist in the database
-    const branch = await db.Branch.findByPk(branchId);
-    const user = await db.User.findByPk(userId);
+    const branch = await db.Branches.findByPk(branchId, {
+      attributes: ["id", "name", "location", "status"],
+    });
+    const user = await db.User.findByPk(userId, {
+      attributes: ["id", "email", "passwordHash", "username"],
+    });
 
     if (!branch || !user) {
-      return res.status(404).json({ message: "Branch or user not found" });
+      throw { status: 404, message: "Branch or user not found" };
     }
 
     // Assign the user to the branch (update the database accordingly)
-    await assignUserToBranch(user, branch);
+    user.assignedBranchId = branchId;
+    await user.save();
+
+    await db.UserBranch.create({
+      userId: user.id,
+      username: user.username,
+      branchId: branch.id,
+      branchName: branch.name,
+    });
 
     // Respond with a success message
-    return res
-      .status(200)
-      .json({ message: "User assigned to branch successfully" });
+    return "User assigned to branch successfully";
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    throw { status: 500, message: "Internal Server Error" };
   }
-  console.log(`User ${user.id} assigned to Branch ${branch.id}`);
 }
 
 async function _delete(id) {

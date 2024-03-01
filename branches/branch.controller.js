@@ -37,7 +37,7 @@ function update(req, res, next) {
 
 function assignUserToBranch(req, res, next) {
   branchService
-    .assignUserToBranch(req.params.id, req.body)
+    .assignUserToBranch(req.params.branchId, req.params.userId)
     .then(() => res.json({ message: "Assign User to Branch success" }))
     .catch(next);
 }
